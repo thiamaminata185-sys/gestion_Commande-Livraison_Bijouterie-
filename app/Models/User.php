@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasMany(Bijou::class, 'idArtisan');
     }
 
+    public function panier()
+    {
+        return $this->hasMany(Panier::class, 'idClient');
+    }
+
     public function favoris()
     {
         return $this->hasMany(Favori::class, 'idClient');

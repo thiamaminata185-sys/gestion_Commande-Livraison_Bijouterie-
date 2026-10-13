@@ -9,6 +9,20 @@ class Commande extends Model
     protected $table = 'commandes';
     protected $primaryKey = 'idCommande';
 
+    /** Statuts qui comptent comme une vente (chiffre d'affaires). */
+    public const STATUTS_VENDUS = ['validee', 'en_production', 'prete', 'en_livraison', 'livree'];
+
+    /** Transitions de statut autorisées (statut actuel => statuts suivants possibles). */
+    public const TRANSITIONS = [
+        'en_attente'    => ['validee', 'annulee'],
+        'validee'       => ['en_production', 'prete', 'annulee'],
+        'en_production' => ['prete'],
+        'prete'         => ['en_livraison'],
+        'en_livraison'  => ['livree'],
+        'livree'        => [],
+        'annulee'       => [],
+    ];
+
     protected $fillable = [
         'idClient','idGestionnaire','statutCommande','dateCommande',
         'montantTotal','adresseLivraison'
@@ -47,6 +61,11 @@ class Commande extends Model
     public function livraison()
     {
         return $this->hasOne(Livraison::class, 'idCommande');
+    }
+
+    public function peutPasserA(string $statut): bool
+    {
+        return in_array($statut, self::TRANSITIONS[$this->statutCommande] ?? [], true);
     }
 
     public function annulerCommande()

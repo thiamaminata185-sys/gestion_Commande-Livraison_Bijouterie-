@@ -78,11 +78,13 @@ class DatabaseSeeder extends Seeder
             ['nomBijou' => 'Bracelet Argent Massif',  'prix' => 45000,  'quantiteStock' => 25, 'idCategorie' => $catArgent->idCategorie, 'type' => 'Bracelet'],
         ];
 
+        $premierBijou = null;
         foreach ($bijoux as $b) {
-            Bijou::create($b + [
+            $cree = Bijou::create($b + [
                 'idGestionnaire' => $gest->id,
                 'idArtisan'      => $artisan->id,
             ]);
+            $premierBijou ??= $cree;
         }
 
         // ---- COMMANDE EXEMPLE ----
@@ -95,12 +97,14 @@ class DatabaseSeeder extends Seeder
         ]);
 
         LigneCommande::create([
-            'idCommande'   => $commande->id,
-            'idBijou'      => 1,
+            'idCommande'   => $commande->idCommande, // la clé primaire s'appelle idCommande (pas id)
+            'idBijou'      => $premierBijou->idBijou,
             'quantite'     => 1,
             'prixUnitaire' => 250000,
             'sousTotal'    => 250000,
         ]);
+
+        $premierBijou->diminuerStock(1); // la commande d'exemple a réservé 1 bague
 
         $this->command->info('Base de donnees peuplee avec succes.');
     }
