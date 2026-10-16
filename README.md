@@ -17,11 +17,11 @@ Application web (Angular 21) qui consomme l'API Laravel **bijouterie-api**. Elle
 ### 1. Récupérer le projet
 
 ```bash
-git clone https://github.com/VOTRE-UTILISATEUR/bijouterie-front.git
-cd bijouterie-front
+git clone https://github.com/thiamaminata185-sys/gestion_Commande-Livraison_Bijouterie-.git
+cd gestion_Commande-Livraison_Bijouterie-
 ```
 
-> Adaptez l'URL au nom réel de votre dépôt GitHub.
+> 
 
 ### 2. Installer les dépendances
 
@@ -43,7 +43,7 @@ Modifiez `apiUrl` si votre API tourne sur une autre adresse ou un autre port.
 
 ### 4. Mettre l'API à jour (une seule fois)
 
-Le frontend s'appuie sur les corrections de l'API (panier, annulation de commande, téléchargement de facture par le client) **et** sur une nouvelle route `GET /api/livreurs`, qui permet au gestionnaire de choisir un livreur. Le dossier `api-modifications/` fourni avec ce projet contient les deux fichiers à copier dans l'API (voir `api-modifications/LISEZMOI.md`).
+Le frontend s'appuie sur les corrections de l'API (panier, annulation de commande, téléchargement de facture par le client) **et** sur une nouvelle route `GET /api/livreurs`, qui permet au gestionnaire de choisir un livreur. Le dossier `api-modifications/` fourni avec ce projet contient les deux fichiers à copier dans l'API .
 
 ### 5. Lancer l'application
 
@@ -57,7 +57,7 @@ php artisan serve
 Dans un second terminal, le frontend :
 
 ```bash
-cd bijouterie-front
+cd angular-bijouterie
 npm start
 ```
 
@@ -81,7 +81,7 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 
 ---
 
-## 🧭 Pages de l'application
+## Pages de l'application
 
 ### Pages publiques
 
@@ -90,7 +90,7 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 | `/login` | Connexion |
 | `/register` | Création d'un compte client |
 
-### 🛍️ Client
+### Client
 
 | Route | Page | Fonctions |
 |---|---|---|
@@ -101,7 +101,7 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 | `/mes-commandes` | Mes commandes | Historique paginé |
 | `/commandes/:id` | Détail d'une commande | Frise d'avancement, paiement (Wave, Orange Money, carte, espèces), annulation, facture PDF, suivi de livraison |
 
-### 🏪 Gestionnaire et administrateur
+### Gestionnaire et administrateur
 
 | Route | Page | Fonctions |
 |---|---|---|
@@ -114,14 +114,14 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 | `/gestion/livraisons` | Livraisons | Suivi de toutes les livraisons |
 | `/admin/utilisateurs` | Utilisateurs *(admin)* | Créer, modifier, activer / désactiver, supprimer |
 
-### 🔨 Artisan
+### Artisan
 
 | Route | Page | Fonctions |
 |---|---|---|
 | `/artisan` | Commandes à préparer | Lancer la production, marquer une commande prête |
 | `/catalogue` | Catalogue | Consultation |
 
-### 🚚 Livreur
+### Livreur
 
 | Route | Page | Fonctions |
 |---|---|---|
@@ -150,7 +150,7 @@ Chaque rôle ne voit dans le menu que les pages qui le concernent. Si vous tapez
 
 ---
 
-## 🗂️ Structure du projet
+## Structure du projet
 
 ```
 src/
@@ -180,7 +180,7 @@ src/
 
 ---
 
-## 🛠️ Technologies utilisées
+## Technologies utilisées
 
 - **Framework** : Angular 21 (composants autonomes, signaux, nouvelle syntaxe `@if` / `@for`)
 - **Langage** : TypeScript (mode strict)
@@ -191,7 +191,7 @@ src/
 
 ---
 
-## ✅ Commandes utiles
+## Commandes utiles
 
 ```bash
 # Lancer le serveur de développement (http://localhost:4200)
@@ -206,7 +206,7 @@ npm run watch
 
 ---
 
-## ❓ Dépannage
+## Dépannage
 
 | Symptôme | Cause probable |
 |---|---|
@@ -215,7 +215,7 @@ npm run watch
 | Renvoyé sur la page de connexion tout le temps | Le token a expiré, a été révoqué ou le compte a été désactivé : reconnectez-vous |
 | Le menu « Livreur » n'affiche aucun livreur à affecter | La route `GET /api/livreurs` n'est pas dans votre API : copiez les fichiers de `api-modifications/` |
 | Les boutons panier, annulation ou facture client donnent 404 | Votre API n'a pas les corrections « v2 » (panier, `/annuler`, `/mes-factures`) |
-| Les bijoux n'ont pas de photo (icône 💎) | L'API ne stocke que le texte du champ `image` : saisissez une **URL complète** (`https://…`) dans la gestion des bijoux |
+| Les bijoux n'ont pas de photo (icône ) | L'API ne stocke que le texte du champ `image` : saisissez une **URL complète** (`https://…`) dans la gestion des bijoux |
 | `ng : commande introuvable` | Utilisez `npm start` (qui appelle le Angular CLI installé dans le projet) après `npm install` |
 | Erreur « Node.js version … » | Installez Node.js 20.19+ ou 22.12+ |
 
@@ -226,7 +226,7 @@ npm run watch
 
 ---
 
-## 🐙 Configuration GitHub
+## Configuration GitHub
 
 ```bash
 git config --global user.name  "Votre Nom"
@@ -237,8 +237,8 @@ git add .
 git status                 # node_modules/, dist/ et .angular/ ne doivent PAS apparaître
 git commit -m "feat: première version du frontend"
 git branch -M main
-git remote add origin https://github.com/VOTRE-UTILISATEUR/bijouterie-front.git
-git push -u origin main
+git remote add origin https://github.com/thiamaminata185-sys/gestion_Commande-Livraison_Bijouterie-.git
+git push -u origin fronted
 ```
 
 Le fichier `.gitignore` fourni exclut déjà `node_modules/`, `dist/` et le cache `.angular/`. Pour les jetons d'accès, les clés SSH et les branches, voir la section « Configuration GitHub » du README de l'API.
