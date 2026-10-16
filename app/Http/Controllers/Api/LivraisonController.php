@@ -64,6 +64,15 @@ class LivraisonController extends Controller
         return response()->json($livraison, 201);
     }
 
+    /** Liste des livreurs actifs : sert au gestionnaire à choisir qui livre (formulaire du frontend). */
+    public function livreurs()
+    {
+        return \App\Models\User::where('role', 'livreur')
+            ->where('actif', true)
+            ->orderBy('nom')
+            ->get(['id', 'prenom', 'nom', 'telephone']);
+    }
+
     public function mesLivraisons(Request $request)
     {
         return Livraison::with('commande.client')

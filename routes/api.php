@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/factures/{facture}',           [FactureController::class, 'show']);
         Route::get('/factures/{facture}/telecharger', [FactureController::class, 'telecharger']);
 
+        Route::get('/livreurs',                [LivraisonController::class, 'livreurs']);
         Route::get('/livraisons',              [LivraisonController::class, 'index']);
         Route::get('/livraisons/{livraison}',  [LivraisonController::class, 'show']);
 
