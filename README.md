@@ -17,11 +17,11 @@ Application web (Angular 21) qui consomme l'API Laravel **bijouterie-api**. Elle
 ### 1. Récupérer le projet
 
 ```bash
-git clone https://github.com/thiamaminata185-sys/gestion_Commande-Livraison_Bijouterie-.git
-cd gestion_Commande-Livraison_Bijouterie-
+git clone https://github.com/VOTRE-UTILISATEUR/bijouterie-front.git
+cd bijouterie-front
 ```
 
-> 
+> Adaptez l'URL au nom réel de votre dépôt GitHub.
 
 ### 2. Installer les dépendances
 
@@ -39,11 +39,17 @@ export const environment = {
 };
 ```
 
-Modifiez `apiUrl` si votre API tourne sur une autre adresse ou un autre port.
+Modifiez `apiUrl` (et `apiOrigin`, la même adresse sans `/api`) si votre API tourne sur une autre adresse ou un autre port. `apiOrigin` sert à afficher les photos téléversées (`/storage/...`).
 
 ### 4. Mettre l'API à jour (une seule fois)
 
-Le frontend s'appuie sur les corrections de l'API (panier, annulation de commande, téléchargement de facture par le client) **et** sur une nouvelle route `GET /api/livreurs`, qui permet au gestionnaire de choisir un livreur. Le dossier `api-modifications/` fourni avec ce projet contient les deux fichiers à copier dans l'API .
+Le frontend s'appuie sur les corrections de l'API (panier, annulation de commande, téléchargement de facture par le client) **et** sur de nouvelles routes : `GET /api/livreurs` (choisir un livreur), `PATCH /api/profil/mot-de-passe` (changer son mot de passe), `POST` et `DELETE /api/profil/image` (photo de profil) et `POST /api/televerser/bijou` (photos de bijoux) et `POST /api/contact` (formulaire de contact). Le dossier `api-modifications/` fourni avec ce projet contient les fichiers à copier dans l'API (voir `api-modifications/LISEZMOI.md`).
+
+Pour que les images téléversées soient visibles, lancez aussi **une fois**, dans l'API :
+
+```bash
+php artisan storage:link
+```
 
 ### 5. Lancer l'application
 
@@ -57,7 +63,7 @@ php artisan serve
 Dans un second terminal, le frontend :
 
 ```bash
-cd angular-bijouterie
+cd bijouterie-front
 npm start
 ```
 
@@ -81,7 +87,7 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 
 ---
 
-## Pages de l'application
+## 🧭 Pages de l'application
 
 ### Pages publiques
 
@@ -90,38 +96,41 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 | `/login` | Connexion |
 | `/register` | Création d'un compte client |
 
-### Client
+### 🛍️ Client
 
 | Route | Page | Fonctions |
 |---|---|---|
-| `/catalogue` | Catalogue | Recherche, filtre par catégorie et par prix, pagination, ajout au panier, favoris |
+| `/accueil` | **Accueil** *(page d'arrivée du client)* | Diaporama image + texte (4 diapositives, défilement automatique, flèches et pastilles), catégories, bijoux à découvrir, savoir-faire, chiffres clés, témoignages, appel à l'action |
+| `/catalogue` | Catalogue | Recherche, filtre par catégorie et par prix, pagination, ajout au panier, favoris (accepte `?search=bague` et `?idCategorie=2` dans l'adresse) |
+| `/a-propos` | **À propos** | Histoire de la maison, valeurs, parcours, équipe |
+| `/contact` | **Contact** | Coordonnées, plan d'accès, formulaire (le message arrive en notification chez le gestionnaire et l'administrateur), questions fréquentes |
 | `/bijoux/:id` | Détail d'un bijou | Galerie, prix, stock, quantité, favori |
 | `/panier` | Panier | Changer les quantités, retirer un produit, vider, passer la commande |
 | `/favoris` | Favoris | Liste, retrait, ajout au panier |
 | `/mes-commandes` | Mes commandes | Historique paginé |
 | `/commandes/:id` | Détail d'une commande | Frise d'avancement, paiement (Wave, Orange Money, carte, espèces), annulation, facture PDF, suivi de livraison |
 
-### Gestionnaire et administrateur
+### 🏪 Gestionnaire et administrateur
 
 | Route | Page | Fonctions |
 |---|---|---|
 | `/gestion/tableau-de-bord` | Tableau de bord | Indicateurs, graphique des ventes, alertes de stock, rapports du jour, de la semaine et du mois |
 | `/gestion/commandes` | Commandes | Liste filtrable par statut |
 | `/commandes/:id` | Détail d'une commande | Valider ou refuser un paiement, annuler, affecter un livreur |
-| `/gestion/bijoux` | Bijoux | Créer, modifier, supprimer |
+| `/gestion/bijoux` | Bijoux | Créer, modifier, supprimer ; **téléverser les photos** par glisser-déposer ou par sélection (la première est la photo principale, une étoile permet d'en choisir une autre) |
 | `/gestion/categories` | Catégories | Créer, modifier, supprimer |
 | `/gestion/factures` | Factures | Liste et téléchargement PDF |
 | `/gestion/livraisons` | Livraisons | Suivi de toutes les livraisons |
 | `/admin/utilisateurs` | Utilisateurs *(admin)* | Créer, modifier, activer / désactiver, supprimer |
 
-### Artisan
+### 🔨 Artisan
 
 | Route | Page | Fonctions |
 |---|---|---|
 | `/artisan` | Commandes à préparer | Lancer la production, marquer une commande prête |
 | `/catalogue` | Catalogue | Consultation |
 
-### Livreur
+### 🚚 Livreur
 
 | Route | Page | Fonctions |
 |---|---|---|
@@ -132,7 +141,16 @@ La page de connexion propose aussi des boutons « Comptes de démonstration » q
 | Route | Page |
 |---|---|
 | `/notifications` | Notifications (cloche en haut, rafraîchie chaque minute) |
-| `/profil` | Modifier son profil |
+| `/profil` | Mon profil : **photo de profil** (changer, supprimer), informations personnelles et **changement de mot de passe** (avec indicateur de sécurité) |
+
+Toutes les pages connectées ont un **pied de page** (boutique, horaires, moyens de paiement, réseaux) et, pour les clients, un bandeau d'engagements (bijoux certifiés, livraison, paiement sécurisé, écrin offert). Les coordonnées de la boutique sont des exemples : modifiez-les dans `src/app/layout/shell.ts` (pied de page) et `src/app/pages/client/contact.ts` (page Contact).
+
+### Personnaliser l'accueil
+
+- **Diapositives** (titres, textes, boutons, images) : tableau `slides` dans `src/app/pages/client/hero-slider.ts`.
+- **Illustrations** : fichiers `public/images/slide-*.svg`. Remplacez-les par vos propres photos (JPG, PNG, WebP ou SVG) en gardant les mêmes noms, ou changez le chemin `image` dans `hero-slider.ts`.
+- **Chiffres clés** et **témoignages** (`avis`) : `src/app/pages/client/accueil.ts`. Ce sont des exemples à remplacer par les vraies informations de la boutique.
+- **Page À propos** (histoire, parcours, équipe) : `src/app/pages/client/a-propos.ts`. Les dates et les textes sont des exemples.
 
 Chaque rôle ne voit dans le menu que les pages qui le concernent. Si vous tapez l'adresse d'une page interdite, l'application vous renvoie vers votre page d'accueil.
 
@@ -150,11 +168,12 @@ Chaque rôle ne voit dans le menu que les pages qui le concernent. Si vous tapez
 
 ---
 
-## Structure du projet
+## 🗂️ Structure du projet
 
 ```
 src/
 ├── environments/environment.ts      Adresse de l'API
+├── (public/images/)                 Illustrations du diaporama (SVG : bague, collier, bracelet, pierre)
 ├── styles.css                       Thème (noir et or) et composants visuels
 └── app/
     ├── app.config.ts                Configuration (HttpClient, routeur, langue française)
@@ -170,7 +189,7 @@ src/
     ├── shared/shared.ts             Pastilles de statut, pagination, image, toasts, format FCFA
     └── pages/
         ├── auth/                    Connexion, inscription
-        ├── client/                  Catalogue, détail, panier, favoris, mes commandes
+        ├── client/                  Accueil (diaporama), à propos, contact, catalogue, détail, panier, favoris, mes commandes
         ├── common/                  Détail d'une commande, notifications, profil
         ├── staff/                   Tableau de bord, commandes, bijoux, catégories, factures, livraisons
         ├── artisan/                 Commandes à préparer
@@ -180,7 +199,7 @@ src/
 
 ---
 
-## Technologies utilisées
+## 🛠️ Technologies utilisées
 
 - **Framework** : Angular 21 (composants autonomes, signaux, nouvelle syntaxe `@if` / `@for`)
 - **Langage** : TypeScript (mode strict)
@@ -191,7 +210,7 @@ src/
 
 ---
 
-## Commandes utiles
+## ✅ Commandes utiles
 
 ```bash
 # Lancer le serveur de développement (http://localhost:4200)
@@ -206,7 +225,7 @@ npm run watch
 
 ---
 
-## Dépannage
+## ❓ Dépannage
 
 | Symptôme | Cause probable |
 |---|---|
@@ -215,18 +234,23 @@ npm run watch
 | Renvoyé sur la page de connexion tout le temps | Le token a expiré, a été révoqué ou le compte a été désactivé : reconnectez-vous |
 | Le menu « Livreur » n'affiche aucun livreur à affecter | La route `GET /api/livreurs` n'est pas dans votre API : copiez les fichiers de `api-modifications/` |
 | Les boutons panier, annulation ou facture client donnent 404 | Votre API n'a pas les corrections « v2 » (panier, `/annuler`, `/mes-factures`) |
-| Les bijoux n'ont pas de photo (icône ) | L'API ne stocke que le texte du champ `image` : saisissez une **URL complète** (`https://…`) dans la gestion des bijoux |
+| Les bijoux n'ont pas de photo (icône 💎) | Le bijou n'a pas de photo, ou l'adresse enregistrée est un simple nom de fichier : téléversez une photo dans « Gestion des bijoux » (ou collez une URL `https://…`) |
+| Le formulaire de contact répond 404 | Votre API n'a pas la route `POST /api/contact` : copiez les fichiers de `api-modifications/` |
+| La carte de la page Contact reste vide | La carte (OpenStreetMap) a besoin d'une connexion internet |
+| Les photos téléversées ne s'affichent pas | Lancez `php artisan storage:link` dans l'API, et vérifiez que `apiOrigin` (dans `environment.ts`) est bien l'adresse du serveur de l'API |
+| « The image failed to upload » | Le fichier dépasse la limite de PHP : gardez des photos de 2 Mo maximum, ou augmentez `upload_max_filesize` et `post_max_size` dans `php.ini` |
+| Changement de mot de passe refusé | Le mot de passe actuel est faux, ou le nouveau fait moins de 8 caractères, ou il est identique à l'ancien |
 | `ng : commande introuvable` | Utilisez `npm start` (qui appelle le Angular CLI installé dans le projet) après `npm install` |
 | Erreur « Node.js version … » | Installez Node.js 20.19+ ou 22.12+ |
 
 ### Limites connues
 
 - Quand un livreur déclare une livraison « échouée », elle disparaît de sa liste, car l'API `GET /mes-livraisons` ne renvoie que les livraisons `en_attente` et `en_cours`. Le gestionnaire la voit toujours dans « Livraisons ».
-- Les images de bijoux se saisissent par URL : il n'y a pas de téléversement de fichier dans l'API.
+- Les photos supprimées d'un bijou (ou les bijoux supprimés) ne sont pas effacées du disque de l'API : seules les photos de profil remplacées sont nettoyées.
 
 ---
 
-## Configuration GitHub
+## 🐙 Configuration GitHub
 
 ```bash
 git config --global user.name  "Votre Nom"
@@ -237,8 +261,8 @@ git add .
 git status                 # node_modules/, dist/ et .angular/ ne doivent PAS apparaître
 git commit -m "feat: première version du frontend"
 git branch -M main
-git remote add origin https://github.com/thiamaminata185-sys/gestion_Commande-Livraison_Bijouterie-.git
-git push -u origin fronted
+git remote add origin https://github.com/VOTRE-UTILISATEUR/bijouterie-front.git
+git push -u origin main
 ```
 
 Le fichier `.gitignore` fourni exclut déjà `node_modules/`, `dist/` et le cache `.angular/`. Pour les jetons d'accès, les clés SSH et les branches, voir la section « Configuration GitHub » du README de l'API.

@@ -1,6 +1,7 @@
 import { Component, Pipe, PipeTransform, computed, input, output, signal } from '@angular/core';
 import { STATUT_COMMANDE, STATUT_LIVRAISON, STATUT_PAIEMENT } from '../core/labels';
 import { ToastService } from '../core/services/toast.service';
+import { initiales, urlImage } from '../core/utils';
 import { inject } from '@angular/core';
 
 /** 250000 -> "250 000 FCFA" */
@@ -65,8 +66,8 @@ export class PaginationComponent {
 @Component({
   selector: 'app-bijou-image',
   template: `
-    @if (urlValide() && !erreur()) {
-      <img [src]="src()" [alt]="alt()" (error)="erreur.set(true)" />
+    @if (url() && echec() !== url()) {
+      <img [src]="url()" [alt]="alt()" (error)="echec.set(url())" />
     } @else {
       <div class="img-placeholder">💎</div>
     }
@@ -79,11 +80,31 @@ export class PaginationComponent {
 export class BijouImageComponent {
   src = input<string | null | undefined>('');
   alt = input('Bijou');
-  erreur = signal(false);
-  urlValide = computed(() => {
-    const s = this.src();
-    return !!s && (s.startsWith('http') || s.startsWith('/') || s.startsWith('data:'));
-  });
+  echec = signal('');
+  url = computed(() => urlImage(this.src()));
+}
+
+/** Photo de profil ronde, ou les initiales de la personne si elle n'a pas de photo. */
+@Component({
+  selector: 'app-avatar',
+  template: `
+    <span class="avatar" [style.width.px]="taille()" [style.height.px]="taille()" [style.fontSize.px]="taille() * 0.4">
+      @if (url() && echec() !== url()) {
+        <img [src]="url()" alt="" (error)="echec.set(url())" />
+      } @else {
+        {{ lettres() }}
+      }
+    </span>
+  `,
+})
+export class AvatarComponent {
+  image = input<string | null | undefined>('');
+  prenom = input('');
+  nom = input('');
+  taille = input(36);
+  echec = signal('');
+  url = computed(() => urlImage(this.image()));
+  lettres = computed(() => initiales(this.prenom(), this.nom()));
 }
 
 @Component({

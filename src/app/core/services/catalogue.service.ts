@@ -40,6 +40,13 @@ export class CatalogueService {
     return this.http.put<Bijou>(`${this.api}/bijoux/${id}`, data);
   }
 
+  /** Téléverse UNE photo de bijou : renvoie son adresse (/storage/bijoux/...). */
+  televerserImage(fichier: File) {
+    const formulaire = new FormData();
+    formulaire.append('image', fichier);
+    return this.http.post<{ url: string }>(`${this.api}/televerser/bijou`, formulaire);
+  }
+
   supprimerBijou(id: number) {
     return this.http.delete<{ message: string }>(`${this.api}/bijoux/${id}`);
   }

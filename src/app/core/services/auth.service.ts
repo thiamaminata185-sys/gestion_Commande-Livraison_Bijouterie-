@@ -47,18 +47,33 @@ export class AuthService {
   }
 
   modifierProfil(data: Partial<User>) {
-    return this.http.patch<User>(`${this.api}/profil`, data).pipe(
-      tap((u) => {
-        this._user.set(u);
-        localStorage.setItem('user', JSON.stringify(u));
-      }),
-    );
+    return this.http.patch<User>(`${this.api}/profil`, data).pipe(tap((u) => this.majUtilisateur(u)));
+  }
+
+  changerMotDePasse(data: { motDePasseActuel: string; motDePasse: string; motDePasse_confirmation: string }) {
+    return this.http.patch<{ message: string }>(`${this.api}/profil/mot-de-passe`, data);
+  }
+
+  /** Envoie une nouvelle photo de profil (fichier image). */
+  televerserPhoto(fichier: File) {
+    const formulaire = new FormData();
+    formulaire.append('image', fichier);
+    return this.http.post<User>(`${this.api}/profil/image`, formulaire).pipe(tap((u) => this.majUtilisateur(u)));
+  }
+
+  supprimerPhoto() {
+    return this.http.delete<User>(`${this.api}/profil/image`).pipe(tap((u) => this.majUtilisateur(u)));
+  }
+
+  private majUtilisateur(u: User) {
+    this._user.set(u);
+    localStorage.setItem('user', JSON.stringify(u));
   }
 
   /** Page d'accueil de chaque rôle après connexion. */
   homeRoute(): string {
     switch (this.role()) {
-      case 'client': return '/catalogue';
+      case 'client': return '/accueil';
       case 'gestionnaire':
       case 'admin': return '/gestion/tableau-de-bord';
       case 'artisan': return '/artisan';

@@ -31,7 +31,11 @@ export const routes: Routes = [
       { path: 'notifications', loadComponent: () => import('./pages/common/notifications').then((m) => m.NotificationsComponent) },
       { path: 'profil', loadComponent: () => import('./pages/common/profil').then((m) => m.ProfilComponent) },
 
+      { path: 'a-propos', loadComponent: () => import('./pages/client/a-propos').then((m) => m.AProposComponent) },
+      { path: 'contact', loadComponent: () => import('./pages/client/contact').then((m) => m.ContactComponent) },
+
       // Client
+      { path: 'accueil', canActivate: [roleGuard('client')], loadComponent: () => import('./pages/client/accueil').then((m) => m.AccueilComponent) },
       { path: 'panier', canActivate: [roleGuard('client')], loadComponent: () => import('./pages/client/panier').then((m) => m.PanierComponent) },
       { path: 'favoris', canActivate: [roleGuard('client')], loadComponent: () => import('./pages/client/favoris').then((m) => m.FavorisComponent) },
       { path: 'mes-commandes', canActivate: [roleGuard('client')], loadComponent: () => import('./pages/client/mes-commandes').then((m) => m.MesCommandesComponent) },

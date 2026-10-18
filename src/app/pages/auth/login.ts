@@ -11,7 +11,7 @@ import { errorMessage } from '../../core/utils';
   template: `
     <div class="auth-wrap">
       <div class="auth-card card">
-        <div class="brand-lg">Étoile d'Or</div>
+        <div class="brand-lg">💎 Étoile d'Or</div>
         <h1>Connexion</h1>
         <form (ngSubmit)="valider()">
           <label>Email

@@ -1,17 +1,16 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Bijou, Categorie } from '../../core/models';
-import { AuthService } from '../../core/services/auth.service';
 import { CatalogueService } from '../../core/services/catalogue.service';
-import { PanierService } from '../../core/services/panier.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
-import { BijouImageComponent, FcfaPipe, PaginationComponent } from '../../shared/shared';
+import { PaginationComponent } from '../../shared/shared';
+import { ProductCardComponent } from '../../shared/product-card';
 
 @Component({
   selector: 'app-catalogue',
-  imports: [FormsModule, RouterLink, BijouImageComponent, PaginationComponent, FcfaPipe],
+  imports: [FormsModule, PaginationComponent, ProductCardComponent],
   template: `
     <h1>Notre collection</h1>
 
@@ -37,28 +36,7 @@ import { BijouImageComponent, FcfaPipe, PaginationComponent } from '../../shared
       <p class="muted">{{ total() }} bijou(x)</p>
       <div class="grid-cards">
         @for (b of items(); track b.idBijou) {
-          <article class="product card">
-            <a class="product-img" [routerLink]="['/bijoux', b.idBijou]">
-              <app-bijou-image [src]="b.image" [alt]="b.nomBijou" />
-              @if (b.quantiteStock === 0) { <span class="ribbon ko">Épuisé</span> }
-              @else if (b.quantiteStock < 5) { <span class="ribbon warn">Plus que {{ b.quantiteStock }}</span> }
-            </a>
-            <div class="product-body">
-              <small class="muted">{{ b.categorie?.nomCategorie }}</small>
-              <h3><a [routerLink]="['/bijoux', b.idBijou]">{{ b.nomBijou }}</a></h3>
-              <div class="price">{{ b.prix | fcfa }}</div>
-              @if (estClient()) {
-                <div class="row">
-                  <button class="btn btn-gold grow" [disabled]="b.quantiteStock === 0" (click)="ajouter(b)">
-                    Ajouter au panier
-                  </button>
-                  <button class="btn btn-ghost heart" [class.on]="estFavori(b)" (click)="basculerFavori(b)" title="Favori">
-                    {{ estFavori(b) ? '♥' : '♡' }}
-                  </button>
-                </div>
-              }
-            </div>
-          </article>
+          <app-product-card [bijou]="b" />
         }
       </div>
       <app-pagination [page]="page()" [last]="last()" (changed)="charger($event)" />
@@ -67,9 +45,8 @@ import { BijouImageComponent, FcfaPipe, PaginationComponent } from '../../shared
 })
 export class CatalogueComponent implements OnInit {
   private catalogue = inject(CatalogueService);
-  private panier = inject(PanierService);
-  private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
 
   items = signal<Bijou[]>([]);
   categories = signal<Categorie[]>([]);
@@ -77,7 +54,6 @@ export class CatalogueComponent implements OnInit {
   last = signal(1);
   total = signal(0);
   chargement = signal(true);
-  estClient = computed(() => this.auth.role() === 'client');
 
   search = '';
   idCategorie: number | '' = '';
@@ -85,6 +61,12 @@ export class CatalogueComponent implements OnInit {
   prixMax: number | null = null;
 
   ngOnInit() {
+    // Les liens de l'accueil peuvent pré-remplir la recherche : /catalogue?search=bague ou ?idCategorie=2
+    const params = this.route.snapshot.queryParamMap;
+    this.search = params.get('search') ?? '';
+    const categorie = Number(params.get('idCategorie'));
+    if (categorie) this.idCategorie = categorie;
+
     this.catalogue.categories().subscribe((c) => this.categories.set(c));
     this.charger(1);
   }
@@ -120,21 +102,5 @@ export class CatalogueComponent implements OnInit {
     this.prixMin = null;
     this.prixMax = null;
     this.charger(1);
-  }
-
-  estFavori(b: Bijou) {
-    return this.catalogue.favoriIds().has(b.idBijou);
-  }
-
-  basculerFavori(b: Bijou) {
-    const action = this.estFavori(b) ? this.catalogue.retirerFavori(b.idBijou) : this.catalogue.ajouterFavori(b.idBijou);
-    action.subscribe({ error: (e) => this.toast.error(errorMessage(e)) });
-  }
-
-  ajouter(b: Bijou) {
-    this.panier.ajouter(b.idBijou, 1).subscribe({
-      next: () => this.toast.success(`« ${b.nomBijou} » ajouté au panier`),
-      error: (e) => this.toast.error(errorMessage(e)),
-    });
   }
 }

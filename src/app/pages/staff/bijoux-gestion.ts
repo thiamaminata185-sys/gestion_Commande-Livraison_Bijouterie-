@@ -1,10 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { catchError, forkJoin, of } from 'rxjs';
 import { Bijou, Categorie } from '../../core/models';
 import { CatalogueService } from '../../core/services/catalogue.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BijouImageComponent, FcfaPipe, PaginationComponent } from '../../shared/shared';
+
+const TAILLE_MAX = 2 * 1024 * 1024; // 2 Mo par photo, comme côté API
 
 interface FormBijou {
   nomBijou: string;
@@ -13,15 +16,13 @@ interface FormBijou {
   prix: number | null;
   prixDorigine: number | null;
   quantiteStock: number | null;
-  image: string;
   descriptionBijou: string;
   etiquette: string; // séparées par des virgules
-  images: string;    // séparées par des virgules
 }
 
 const vide = (): FormBijou => ({
   nomBijou: '', idCategorie: null, type: '', prix: null, prixDorigine: null, quantiteStock: null,
-  image: '', descriptionBijou: '', etiquette: '', images: '',
+  descriptionBijou: '', etiquette: '',
 });
 
 @Component({
@@ -53,13 +54,44 @@ const vide = (): FormBijou => ({
             <label>Stock<input name="stock" type="number" min="0" [(ngModel)]="f.quantiteStock" required /></label>
           </div>
           <label>Description<textarea name="desc" rows="2" [(ngModel)]="f.descriptionBijou"></textarea></label>
-          <label>Image principale (URL)<input name="image" [(ngModel)]="f.image" placeholder="https://…" /></label>
-          <div class="grid-2">
-            <label>Autres images (URLs séparées par des virgules)<input name="images" [(ngModel)]="f.images" /></label>
-            <label>Étiquettes (séparées par des virgules)<input name="etiq" [(ngModel)]="f.etiquette" placeholder="nouveau, or" /></label>
+          <label>Étiquettes (séparées par des virgules)<input name="etiq" [(ngModel)]="f.etiquette" placeholder="nouveau, or" /></label>
+
+          <!-- Photos -->
+          <div class="field-title">Photos du bijou</div>
+          <div class="upload-zone" [class.drag]="survol()"
+               (dragover)="glisser($event)" (dragleave)="survol.set(false)" (drop)="deposer($event)">
+            <div class="upload-icon">📷</div>
+            <p>{{ envoiPhotos() ? 'Envoi des photos…' : 'Glissez vos photos ici' }}</p>
+            <label class="btn btn-ghost" [class.disabled]="envoiPhotos()">
+              Choisir des fichiers
+              <input type="file" accept="image/png,image/jpeg,image/webp" multiple hidden
+                     [disabled]="envoiPhotos()" (change)="choisir($event)" />
+            </label>
+            <small class="muted">JPG, PNG ou WebP · 2 Mo maximum par photo · la première photo est la photo principale</small>
           </div>
+
+          @if (photos().length > 0) {
+            <div class="photos">
+              @for (p of photos(); track p; let i = $index) {
+                <div class="photo" [class.main]="i === 0">
+                  <app-bijou-image [src]="p" alt="Photo du bijou" />
+                  @if (i === 0) { <span class="photo-tag">Principale</span> }
+                  <div class="photo-actions">
+                    @if (i > 0) { <button type="button" title="Définir comme photo principale" (click)="definirPrincipale(i)">★</button> }
+                    <button type="button" title="Retirer cette photo" (click)="retirerPhoto(i)">✕</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <div class="row url-row">
+            <input name="urlPhoto" placeholder="…ou collez l'adresse d'une image (https://…)" [(ngModel)]="urlSaisie" />
+            <button type="button" class="btn btn-ghost" (click)="ajouterUrl()">Ajouter</button>
+          </div>
+
           <div class="row">
-            <button class="btn btn-gold" [disabled]="envoi()">{{ envoi() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+            <button class="btn btn-gold" [disabled]="envoi() || envoiPhotos()">{{ envoi() ? 'Enregistrement…' : 'Enregistrer' }}</button>
             <button type="button" class="btn btn-ghost" (click)="formulaireOuvert.set(false)">Annuler</button>
           </div>
         </form>
@@ -102,6 +134,12 @@ export class BijouxGestionComponent implements OnInit {
   envoi = signal(false);
   f: FormBijou = vide();
 
+  /** Adresses des photos du bijou : la première est la photo principale. */
+  photos = signal<string[]>([]);
+  envoiPhotos = signal(false);
+  survol = signal(false);
+  urlSaisie = '';
+
   ngOnInit() {
     this.catalogue.categories().subscribe((c) => this.categories.set(c));
     this.charger(1);
@@ -120,6 +158,8 @@ export class BijouxGestionComponent implements OnInit {
 
   nouveau() {
     this.f = vide();
+    this.photos.set([]);
+    this.urlSaisie = '';
     this.idEdition.set(null);
     this.formulaireOuvert.set(true);
   }
@@ -132,21 +172,97 @@ export class BijouxGestionComponent implements OnInit {
       prix: Number(b.prix),
       prixDorigine: b.prixDorigine ? Number(b.prixDorigine) : null,
       quantiteStock: b.quantiteStock,
-      image: b.image ?? '',
       descriptionBijou: b.descriptionBijou ?? '',
       etiquette: (b.etiquette ?? []).join(', '),
-      images: (b.images ?? []).join(', '),
     };
+    this.photos.set([b.image, ...(b.images ?? [])].filter((x): x is string => !!x));
+    this.urlSaisie = '';
     this.idEdition.set(b.idBijou);
     this.formulaireOuvert.set(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ---- Photos ----
+  choisir(event: Event) {
+    const champ = event.target as HTMLInputElement;
+    const fichiers = Array.from(champ.files ?? []);
+    champ.value = '';
+    this.televerser(fichiers);
+  }
+
+  glisser(event: DragEvent) {
+    event.preventDefault();
+    this.survol.set(true);
+  }
+
+  deposer(event: DragEvent) {
+    event.preventDefault();
+    this.survol.set(false);
+    this.televerser(Array.from(event.dataTransfer?.files ?? []));
+  }
+
+  private televerser(fichiers: File[]) {
+    const valides = fichiers.filter((f) => {
+      if (!f.type.startsWith('image/')) {
+        this.toast.error(`« ${f.name} » n'est pas une image`);
+        return false;
+      }
+      if (f.size > TAILLE_MAX) {
+        this.toast.error(`« ${f.name} » dépasse 2 Mo`);
+        return false;
+      }
+      return true;
+    });
+    if (valides.length === 0) return;
+
+    this.envoiPhotos.set(true);
+    forkJoin(
+      valides.map((f) =>
+        this.catalogue.televerserImage(f).pipe(
+          catchError((e) => {
+            this.toast.error(`« ${f.name} » : ${errorMessage(e)}`);
+            return of(null);
+          }),
+        ),
+      ),
+    ).subscribe((resultats) => {
+      const urls = resultats.filter((r): r is { url: string } => r !== null).map((r) => r.url);
+      this.photos.update((p) => [...p, ...urls]);
+      this.envoiPhotos.set(false);
+      if (urls.length > 0) this.toast.success(urls.length > 1 ? `${urls.length} photos ajoutées` : 'Photo ajoutée');
+    });
+  }
+
+  ajouterUrl() {
+    const url = this.urlSaisie.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      this.toast.error("L'adresse doit commencer par http:// ou https://");
+      return;
+    }
+    this.photos.update((p) => [...p, url]);
+    this.urlSaisie = '';
+  }
+
+  definirPrincipale(index: number) {
+    this.photos.update((p) => {
+      const copie = [...p];
+      const [choisie] = copie.splice(index, 1);
+      return [choisie, ...copie];
+    });
+  }
+
+  retirerPhoto(index: number) {
+    this.photos.update((p) => p.filter((_, i) => i !== index));
+  }
+
+  // ---- Enregistrement ----
   private liste(texte: string): string[] {
     return texte.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
   }
 
   enregistrer() {
+    const photos = this.photos();
     const donnees = {
       nomBijou: this.f.nomBijou,
       idCategorie: this.f.idCategorie,
@@ -154,10 +270,10 @@ export class BijouxGestionComponent implements OnInit {
       prix: this.f.prix,
       prixDorigine: this.f.prixDorigine,
       quantiteStock: this.f.quantiteStock,
-      image: this.f.image || null,
+      image: photos[0] ?? null,
+      images: photos.slice(1),
       descriptionBijou: this.f.descriptionBijou || null,
       etiquette: this.liste(this.f.etiquette),
-      images: this.liste(this.f.images),
     };
     const id = this.idEdition();
     this.envoi.set(true);

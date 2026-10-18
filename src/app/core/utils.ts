@@ -1,3 +1,22 @@
+import { environment } from '../../environments/environment';
+
+/**
+ * Transforme l'adresse d'une image stockée en base en adresse utilisable dans <img> :
+ *  - « https://… » reste tel quel ;
+ *  - « /storage/bijoux/x.jpg » (image téléversée sur l'API) est complété avec l'adresse du serveur ;
+ *  - un simple nom de fichier (« bague.jpg ») n'est pas affichable : on renvoie ''.
+ */
+export function urlImage(src: string | null | undefined): string {
+  if (!src) return '';
+  if (/^(https?:|data:|blob:)/.test(src)) return src;
+  if (src.startsWith('/')) return environment.apiOrigin + src;
+  return '';
+}
+
+export function initiales(prenom?: string, nom?: string): string {
+  return ((prenom?.[0] ?? '') + (nom?.[0] ?? '')).toUpperCase() || '?';
+}
+
 /** Extrait un message lisible d'une erreur HTTP de l'API Laravel. */
 export function errorMessage(err: unknown): string {
   const e = err as { status?: number; error?: { message?: string; errors?: Record<string, string[]> }; message?: string };
