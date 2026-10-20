@@ -5,14 +5,17 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BijouController;
 use App\Http\Controllers\Api\CategorieController;
 use App\Http\Controllers\Api\CommandeController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\FactureController;
 use App\Http\Controllers\Api\FavoriController;
 use App\Http\Controllers\Api\LivraisonController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PanierController;
 use App\Http\Controllers\Api\PaiementController;
+use App\Http\Controllers\Api\ProfilController;
 use App\Http\Controllers\Api\RapportController;
 use App\Http\Controllers\Api\StatistiqueController;
+use App\Http\Controllers\Api\TeleversementController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +30,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me',       [AuthController::class, 'me']);
     Route::post('/logout',  [AuthController::class, 'logout']);
     Route::patch('/profil', [AuthController::class, 'modifierProfil']);
+    Route::post('/contact', [ContactController::class, 'envoyer'])->middleware('throttle:5,1');
+    Route::patch('/profil/mot-de-passe', [ProfilController::class, 'changerMotDePasse']);
+    Route::post('/profil/image',         [ProfilController::class, 'televerserPhoto']);
+    Route::delete('/profil/image',       [ProfilController::class, 'supprimerPhoto']);
 
     // ---- Catalogue (tous les rôles) ----
     Route::get('/bijoux',              [BijouController::class, 'index']);
@@ -62,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ---- GESTIONNAIRE + ADMIN ----
     Route::middleware('role:gestionnaire,admin')->group(function () {
+        Route::post('/televerser/bijou', [TeleversementController::class, 'bijou']);
         Route::apiResource('bijoux', BijouController::class)
              ->parameters(['bijoux' => 'bijou'])
              ->except(['index', 'show']);
