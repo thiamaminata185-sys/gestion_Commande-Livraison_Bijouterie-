@@ -19,7 +19,7 @@ interface Lien { path: string; label: string; }
   template: `
     <header class="topbar">
       <div class="topbar-inner">
-        <a class="brand" [routerLink]="auth.homeRoute()"> <span><img src="images/logo.jfif" alt="Logo Étoile d'Or" width="150" height="50" /></span></a>
+        <a class="brand" [routerLink]="auth.homeRoute()"> <span><img src="images/logo-horizontal-fond-sombre.svg" alt="Logo Étoile d'Or" width="100" height="50" /></span></a>
 
         <button class="burger" (click)="menuOuvert.set(!menuOuvert())" aria-label="Menu">☰</button>
 
@@ -75,7 +75,7 @@ interface Lien { path: string; label: string; }
     <footer class="footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <div class="footer-logo"><img src="images/logo.jfif" alt="Logo Étoile d'Or" width="150" height="80" /></div>
+          <div class="footer-logo"><img src="images/logo-horizontal-fond-sombre.svg" alt="Logo Étoile d'Or" width="150" height="80" /></div>
           <p>Bijouterie d'exception à Dakar. Or, argent et pierres précieuses, façonnés avec passion par nos artisans.</p>
           <div class="socials">
             <a href="#" title="Instagram" aria-label="Instagram"><svg xmlns="http://w3.org" width="24" height="24" viewBox="0 0 24 24" fill="#E4405F">
@@ -118,12 +118,12 @@ interface Lien { path: string; label: string; }
   <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
   <path d="M12 18h.01"/>
 </svg>
-</span> +221 33 000 00 00</li>
+</span> +221 77 632 10 98</li>
             <li><span><svg xmlns="http://w3.org" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <rect width="20" height="16" x="2" y="4" rx="2"/>
   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
 </svg>
-</span> contact@etoile-or.sn</li>
+</span> bijouterieetoiledor@gmail.com</li>
           </ul>
         </div>
 

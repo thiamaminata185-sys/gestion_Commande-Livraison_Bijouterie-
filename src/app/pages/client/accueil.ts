@@ -79,7 +79,7 @@ interface Avis { texte: string; nom: string; ville: string; }
 
     <!-- Chiffres -->
     <section class="stats-band">
-      <div><strong>15+</strong><span>années d'expérience</span></div>
+      <div><strong>30+</strong><span>années d'expérience</span></div>
       <div><strong>2 000+</strong><span>bijoux créés</span></div>
       <div><strong>100 %</strong><span>or et argent certifiés</span></div>
       <div><strong>4,9 / 5</strong><span>satisfaction clients</span></div>

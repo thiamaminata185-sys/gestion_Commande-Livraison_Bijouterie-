@@ -92,7 +92,7 @@ import { RouterLink } from '@angular/router';
 })
 export class AProposComponent {
   etapes = [
-    { annee: '2010', titre: "Ouverture de l'atelier", texte: 'Les premières pièces sont façonnées dans un petit atelier du Plateau.' },
+    { annee: '1992', titre: "Ouverture de l'atelier", texte: 'Les premières pièces sont façonnées dans un petit atelier du Plateau.' },
     { annee: '2015', titre: 'Les créations sur mesure', texte: 'Lancement du service de bijoux personnalisés, gravure et retouches.' },
     { annee: '2020', titre: 'La collection s\'agrandit', texte: 'Arrivée des perles de Tahiti, des pierres précieuses et de la ligne argent massif.' },
     { annee: '2026', titre: 'La boutique en ligne', texte: 'Commande, paiement mobile, suivi de livraison : toute la bijouterie à portée de clic.' },

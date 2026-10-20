@@ -11,7 +11,7 @@ import { errorMessage } from '../../core/utils';
   template: `
     <div class="auth-wrap">
       <div class="auth-card card wide">
-        <div class="brand-lg">Étoile d'Or</div>
+        <div class="brand-lg"><img src="images/logo-horizontal-pour-fond-clair.svg" alt="Logo Étoile d'Or" width="150" height="80" /></div>
         <h1>Créer un compte</h1>
         <form (ngSubmit)="valider()">
           <div class="grid-2">
