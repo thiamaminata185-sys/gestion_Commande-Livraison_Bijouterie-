@@ -1,6 +1,6 @@
-// Adresse de l'API Laravel (php artisan serve). Modifiez-la si votre API tourne ailleurs.
+// Environnement de PRODUCTION (npm run build, Vercel) : remplacez par l'adresse de votre API sur Render.
 export const environment = {
-  apiUrl: 'http://127.0.0.1:8000/api',
-  // Adresse du serveur de l'API sans « /api » : sert à afficher les images téléversées (/storage/...).
-  apiOrigin: 'http://127.0.0.1:8000',
+  apiUrl: 'https://VOTRE-API.onrender.com/api',
+  // Même adresse sans « /api » : sert à afficher les images téléversées (/storage/...).
+  apiOrigin: 'https://VOTRE-API.onrender.com',
 };
