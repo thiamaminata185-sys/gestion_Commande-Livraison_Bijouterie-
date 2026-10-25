@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { PaginationComponent } from '../../shared/shared';
+import { ModalComponent } from '../../shared/modal';
 
 interface FormUser {
   prenom: string; nom: string; email: string; telephone: string; adresse: string; role: Role; motDePasse: string;
@@ -16,7 +17,7 @@ const vide = (): FormUser => ({ prenom: '', nom: '', email: '', telephone: '', a
 
 @Component({
   selector: 'app-utilisateurs',
-  imports: [FormsModule, PaginationComponent],
+  imports: [FormsModule, PaginationComponent,ModalComponent],
   template: `
     <div class="page-head">
       <h1>Utilisateurs</h1>
@@ -24,8 +25,7 @@ const vide = (): FormUser => ({ prenom: '', nom: '', email: '', telephone: '', a
     </div>
 
     @if (formulaireOuvert()) {
-      <div class="card">
-        <h2>{{ idEdition() ? "Modifier l'utilisateur" : 'Nouvel utilisateur' }}</h2>
+        <app-modal [titre]="idEdition() ? 'Modifier l’utilisateur' : 'Nouvel utilisateur'" (fermer)="formulaireOuvert.set(false)">
         <form (ngSubmit)="enregistrer()">
           <div class="grid-2">
             <label>Prénom<input name="prenom" [(ngModel)]="f.prenom" required /></label>
@@ -51,7 +51,7 @@ const vide = (): FormUser => ({ prenom: '', nom: '', email: '', telephone: '', a
             <button type="button" class="btn btn-ghost" (click)="formulaireOuvert.set(false)">Annuler</button>
           </div>
         </form>
-      </div>
+      </app-modal>
     }
 
     <div class="card table-wrap">
@@ -125,7 +125,6 @@ export class UtilisateursComponent implements OnInit {
     };
     this.idEdition.set(u.id);
     this.formulaireOuvert.set(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   enregistrer() {

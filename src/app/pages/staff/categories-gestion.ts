@@ -4,22 +4,30 @@ import { Categorie } from '../../core/models';
 import { CatalogueService } from '../../core/services/catalogue.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
+import { ModalComponent } from '../../shared/modal';
 
 @Component({
   selector: 'app-categories-gestion',
-  imports: [FormsModule],
+  imports: [FormsModule,ModalComponent],
   template: `
-    <h1>Catégories</h1>
 
-    <div class="card">
-      <h2>{{ idEdition() ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h2>
-      <form class="row wrap" (ngSubmit)="enregistrer()">
-        <input name="nom" placeholder="Nom (ex. Or)" [(ngModel)]="nom" required />
-        <input name="desc" class="grow" placeholder="Description" [(ngModel)]="description" />
-        <button class="btn btn-gold" [disabled]="envoi()">{{ idEdition() ? 'Enregistrer' : 'Ajouter' }}</button>
-        @if (idEdition()) { <button type="button" class="btn btn-ghost" (click)="annulerEdition()">Annuler</button> }
-      </form>
+      <div class="page-head">
+      <h1>Catégories</h1>
+      <button class="btn btn-gold" (click)="nouvelle()">+ Nouvelle catégorie</button>
     </div>
+
+    @if (formulaireOuvert()) {
+      <app-modal [titre]="idEdition() ? 'Modifier la catégorie' : 'Nouvelle catégorie'" [petit]="true" (fermer)="annulerEdition()">
+        <form (ngSubmit)="enregistrer()">
+          <label>Nom<input name="nom" placeholder="Ex. Or" [(ngModel)]="nom" required /></label>
+          <label>Description<textarea name="desc" rows="3" [(ngModel)]="description"></textarea></label>
+          <div class="row">
+            <button class="btn btn-gold grow" [disabled]="envoi()">{{ envoi() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+            <button type="button" class="btn btn-ghost" (click)="annulerEdition()">Annuler</button>
+          </div>
+        </form>
+      </app-modal>
+    }
 
     <div class="card table-wrap">
       <table class="table">
@@ -50,6 +58,7 @@ export class CategoriesGestionComponent implements OnInit {
   envoi = signal(false);
   nom = '';
   description = '';
+  formulaireOuvert = signal(false);
 
   ngOnInit() {
     this.charger();
@@ -62,13 +71,23 @@ export class CategoriesGestionComponent implements OnInit {
     });
   }
 
+   nouvelle() {
+    this.idEdition.set(null);
+    this.nom = '';
+    this.description = '';
+    this.formulaireOuvert.set(true);
+  }
+
   modifier(c: Categorie) {
     this.idEdition.set(c.idCategorie);
     this.nom = c.nomCategorie;
     this.description = c.descriptionCategorie ?? '';
+    this.formulaireOuvert.set(true);
   }
 
+  /** Ferme la fenêtre et vide le formulaire. */
   annulerEdition() {
+    this.formulaireOuvert.set(false);
     this.idEdition.set(null);
     this.nom = '';
     this.description = '';

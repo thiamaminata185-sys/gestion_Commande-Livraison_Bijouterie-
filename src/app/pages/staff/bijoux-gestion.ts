@@ -6,6 +6,7 @@ import { CatalogueService } from '../../core/services/catalogue.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BijouImageComponent, FcfaPipe, PaginationComponent } from '../../shared/shared';
+import { ModalComponent } from '../../shared/modal';
 
 const TAILLE_MAX = 2 * 1024 * 1024; // 2 Mo par photo, comme côté API
 
@@ -27,7 +28,7 @@ const vide = (): FormBijou => ({
 
 @Component({
   selector: 'app-bijoux-gestion',
-  imports: [FormsModule, BijouImageComponent, FcfaPipe, PaginationComponent],
+  imports: [FormsModule, BijouImageComponent, FcfaPipe, PaginationComponent , ModalComponent],
   template: `
     <div class="page-head">
       <h1>Gestion des bijoux</h1>
@@ -35,8 +36,7 @@ const vide = (): FormBijou => ({
     </div>
 
     @if (formulaireOuvert()) {
-      <div class="card">
-        <h2>{{ idEdition() ? 'Modifier le bijou' : 'Nouveau bijou' }}</h2>
+        <app-modal [titre]="idEdition() ? 'Modifier le bijou' : 'Nouveau bijou'" (fermer)="formulaireOuvert.set(false)">
         <form (ngSubmit)="enregistrer()">
           <div class="grid-2">
             <label>Nom<input name="nom" [(ngModel)]="f.nomBijou" required /></label>
@@ -95,9 +95,31 @@ const vide = (): FormBijou => ({
             <button type="button" class="btn btn-ghost" (click)="formulaireOuvert.set(false)">Annuler</button>
           </div>
         </form>
-      </div>
+      </app-modal>
     }
-
+        @if (stockBijou(); as sb) {
+      <app-modal [titre]="'Stock : ' + sb.nomBijou" [petit]="true" (fermer)="stockBijou.set(null)">
+        <p class="muted">Stock actuel : <strong>{{ sb.quantiteStock }}</strong></p>
+        <form (ngSubmit)="enregistrerStock()">
+          <label>Nouvelle quantité en stock
+            <div class="stepper big">
+              <button type="button" class="btn btn-ghost" (click)="ajusterStock(-1)">−</button>
+              <input name="stock" type="number" min="0" [(ngModel)]="nouveauStock" required />
+              <button type="button" class="btn btn-ghost" (click)="ajusterStock(1)">+</button>
+            </div>
+          </label>
+          <div class="row quick">
+            <button type="button" class="btn btn-ghost" (click)="ajusterStock(5)">+5</button>
+            <button type="button" class="btn btn-ghost" (click)="ajusterStock(10)">+10</button>
+            <button type="button" class="btn btn-ghost" (click)="nouveauStock = 0">Mettre à 0</button>
+          </div>
+          <div class="row">
+            <button class="btn btn-gold grow" [disabled]="envoiStock()">{{ envoiStock() ? 'Enregistrement…' : 'Enregistrer le stock' }}</button>
+            <button type="button" class="btn btn-ghost" (click)="stockBijou.set(null)">Annuler</button>
+          </div>
+        </form>
+      </app-modal>
+    }
     <div class="card table-wrap">
       <table class="table">
         <thead><tr><th></th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th></th></tr></thead>
@@ -110,6 +132,7 @@ const vide = (): FormBijou => ({
               <td>{{ b.prix | fcfa }}</td>
               <td><span class="badge" [class]="b.quantiteStock === 0 ? 'ko' : b.quantiteStock < 5 ? 'warn' : 'ok'">{{ b.quantiteStock }}</span></td>
               <td class="actions">
+                <button class="btn btn-ghost" (click)="ouvrirStock(b)" title="Mettre à jour le stock">📦 Stock</button>
                 <button class="btn btn-ghost" (click)="modifier(b)">Modifier</button>
                 <button class="btn btn-danger-ghost" (click)="supprimer(b)">Supprimer</button>
               </td>
@@ -139,6 +162,11 @@ export class BijouxGestionComponent implements OnInit {
   envoiPhotos = signal(false);
   survol = signal(false);
   urlSaisie = '';
+
+  /** Fenêtre « Stock » : bijou concerné, quantité saisie, envoi en cours. */
+  stockBijou = signal<Bijou | null>(null);
+  envoiStock = signal(false);
+  nouveauStock = 0;
 
   ngOnInit() {
     this.catalogue.categories().subscribe((c) => this.categories.set(c));
@@ -179,7 +207,36 @@ export class BijouxGestionComponent implements OnInit {
     this.urlSaisie = '';
     this.idEdition.set(b.idBijou);
     this.formulaireOuvert.set(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+    // ---- Mise à jour rapide du stock ----
+  ouvrirStock(b: Bijou) {
+    this.stockBijou.set(b);
+    this.nouveauStock = b.quantiteStock;
+  }
+
+  ajusterStock(delta: number) {
+    this.nouveauStock = Math.max(0, (Number(this.nouveauStock) || 0) + delta);
+  }
+
+  enregistrerStock() {
+    const b = this.stockBijou();
+    if (!b) return;
+    const quantite = Math.max(0, Math.floor(Number(this.nouveauStock) || 0));
+    this.envoiStock.set(true);
+    // L'API accepte une modification partielle : on n'envoie que la quantité.
+    this.catalogue.modifierBijou(b.idBijou, { quantiteStock: quantite }).subscribe({
+      next: () => {
+        this.toast.success(`Stock de « ${b.nomBijou} » : ${quantite}`);
+        this.stockBijou.set(null);
+        this.envoiStock.set(false);
+        this.charger(this.page());
+      },
+      error: (e) => {
+        this.toast.error(errorMessage(e));
+        this.envoiStock.set(false);
+      },
+    });
   }
 
   // ---- Photos ----
