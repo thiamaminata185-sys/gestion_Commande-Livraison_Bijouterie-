@@ -75,7 +75,7 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
             <p><strong>Adresse :</strong> {{ c.adresseLivraison || '—' }}</p>
             @if (c.livraison; as l) {
               <p><strong>Livreur :</strong> {{ l.livreur ? l.livreur.prenom + ' ' + l.livreur.nom : '#' + l.idLivreur }}
-                @if (l.livreur?.telephone) { · {{ l.livreur.telephone }} }
+                @if (l.livreur?.telephone) { · {{ l.livreur?.telephone }} }
               </p>
               <p><strong>Statut :</strong> <app-badge [statut]="l.statutLivraison" type="livraison" /></p>
               @for (a of actionsLivraison(l); track a.statut) {
