@@ -6,17 +6,18 @@ import { CommandeService } from '../../core/services/commande.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BadgeComponent } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 @Component({
   selector: 'app-artisan',
-  imports: [DatePipe, RouterLink, BadgeComponent],
+  imports: [DatePipe, RouterLink, BadgeComponent,IconComponent],
   template: `
     <h1>Commandes à préparer</h1>
 
     @if (chargement()) {
       <p class="muted">Chargement…</p>
     } @else if (commandes().length === 0) {
-      <div class="card empty">Rien à préparer pour le moment. 🎉</div>
+      <div class="card empty">Rien à préparer pour le moment. </div>
     } @else {
       <div class="grid-cards wide">
         @for (c of commandes(); track c.idCommande) {
@@ -33,10 +34,10 @@ import { BadgeComponent } from '../../shared/shared';
             </ul>
             <div class="row">
               @if (c.statutCommande === 'validee') {
-                <button class="btn btn-ghost grow" [disabled]="occupe()" (click)="produire(c)">Lancer la production</button>
+                <button class="btn btn-ghost block has-icon" (click)="produire(c)"><app-icon nom="play" [taille]="16" /> Lancer la production</button>
               }
               <button class="btn btn-gold grow" [disabled]="occupe()" (click)="prete(c)">Marquer prête</button>
-              <a class="btn btn-ghost" [routerLink]="['/commandes', c.idCommande]">Détail</a>
+              <td><a class="btn-icon" [routerLink]="['/commandes', c.idCommande]" title="Voir la commande" aria-label="Voir"><app-icon nom="eye" /></a></td>
             </div>
           </article>
         }

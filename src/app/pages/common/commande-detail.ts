@@ -10,13 +10,14 @@ import { CommandeService } from '../../core/services/commande.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage, telecharger } from '../../core/utils';
 import { BadgeComponent, BijouImageComponent, FcfaPipe } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 interface ActionLivraison { statut: StatutLivraison; label: string; classe: string; }
 
 /** Page d'une commande, commune à tous les rôles : chacun n'y voit que les actions qui le concernent. */
 @Component({
   selector: 'app-commande-detail',
-  imports: [DatePipe, FormsModule, RouterLink, BadgeComponent, BijouImageComponent, FcfaPipe],
+  imports: [DatePipe, FormsModule, RouterLink, BadgeComponent, BijouImageComponent, FcfaPipe,IconComponent],
   template: `
     <a class="back" [routerLink]="retour()">← Retour</a>
 
@@ -86,7 +87,7 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
                   <option [ngValue]="null">Choisir un livreur…</option>
                   @for (l of livreurs(); track l.id) { <option [ngValue]="l.id">{{ l.prenom }} {{ l.nom }}</option> }
                 </select>
-                <button class="btn btn-gold" [disabled]="occupe() || !idLivreur">Affecter</button>
+                <button class="btn btn-gold has-icon" [disabled]="occupe() || !idLivreur"> <app-icon nom="truck" [taille]="16" />Affecter</button>
               </form>
               @if (livreurs().length === 0) { <p class="muted small">Aucun livreur actif disponible.</p> }
             } @else {
@@ -116,8 +117,8 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
               <p class="line"><span>Référence</span><code>{{ p.referenceTransaction }}</code></p>
               @if (estPersonnel() && p.statut === 'en_attente') {
                 <div class="row">
-                  <button class="btn btn-gold grow" [disabled]="occupe()" (click)="validerPaiement(p.id)">Valider le paiement</button>
-                  <button class="btn btn-danger-ghost" [disabled]="occupe()" (click)="annulerPaiement(p.id)">Refuser</button>
+                  <button class="btn btn-gold grow has-icon" (click)="validerPaiement(p.id)"><app-icon nom="check" [taille]="16" /> Valider le paiement</button>
+                  <button class="btn btn-danger-ghost has-icon" (click)="annulerPaiement(p.id)"><app-icon nom="x" [taille]="16" /> Refuser</button>
                 </div>
               }
               @if (estClient() && p.statut === 'en_attente') {
@@ -147,7 +148,7 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
               <p class="line"><span>HT</span><span>{{ f.montantHT | fcfa }}</span></p>
               <p class="line"><span>TVA (18 %)</span><span>{{ f.tva | fcfa }}</span></p>
               <p class="line"><span>TTC</span><strong>{{ f.montantTTC | fcfa }}</strong></p>
-              <button class="btn btn-ghost block" (click)="telechargerFacture(c)">📄 Télécharger le PDF</button>
+              <button class="btn-icon info" title="Télécharger le PDF" aria-label="Télécharger" (click)="telechargerFacture(c)"><app-icon nom="download" /></button>
             </div>
           }
 

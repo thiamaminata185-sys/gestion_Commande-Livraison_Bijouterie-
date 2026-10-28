@@ -6,12 +6,13 @@ import { AdminService } from '../../core/services/admin.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage, toNumber } from '../../core/utils';
 import { BadgeComponent, FcfaPipe } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 type Periode = 'journalier' | 'hebdomadaire' | 'mensuel';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, DatePipe, BadgeComponent, FcfaPipe],
+  imports: [RouterLink, DatePipe, BadgeComponent, FcfaPipe,IconComponent],
   template: `
     <h1>Tableau de bord</h1>
 
@@ -87,7 +88,7 @@ type Periode = 'journalier' | 'hebdomadaire' | 'mensuel';
                   <td>{{ c.client?.prenom }} {{ c.client?.nom }}</td>
                   <td>{{ c.montantTotal | fcfa }}</td>
                   <td><app-badge [statut]="c.statutCommande" /></td>
-                  <td><a class="btn btn-ghost" [routerLink]="['/commandes', c.idCommande]">Voir</a></td>
+                  <td><a class="btn-icon" [routerLink]="['/commandes', c.idCommande]" title="Gérer la commande" aria-label="Gérer"><app-icon nom="eye" /></a></td>
                 </tr>
               }
             </tbody>

@@ -8,10 +8,11 @@ import { CommandeService } from '../../core/services/commande.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BadgeComponent, FcfaPipe, PaginationComponent } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 @Component({
   selector: 'app-commandes-gestion',
-  imports: [FormsModule, RouterLink, DatePipe, BadgeComponent, FcfaPipe, PaginationComponent],
+  imports: [FormsModule, RouterLink, DatePipe, BadgeComponent, FcfaPipe, PaginationComponent,IconComponent],
   template: `
     <div class="page-head">
       <h1>Commandes</h1>
@@ -41,7 +42,7 @@ import { BadgeComponent, FcfaPipe, PaginationComponent } from '../../shared/shar
                   @else { <span class="muted">—</span> }
                 </td>
                 <td><app-badge [statut]="c.statutCommande" /></td>
-                <td><a class="btn btn-ghost" [routerLink]="['/commandes', c.idCommande]">Gérer</a></td>
+                <td><a class="btn-icon" [routerLink]="['/commandes', c.idCommande]" title="Gérer la commande" aria-label="Gérer"><app-icon nom="eye" /></a></td>
               </tr>
             }
           </tbody>

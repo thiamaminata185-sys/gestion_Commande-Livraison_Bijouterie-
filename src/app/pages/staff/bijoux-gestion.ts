@@ -7,6 +7,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BijouImageComponent, FcfaPipe, PaginationComponent } from '../../shared/shared';
 import { ModalComponent } from '../../shared/modal';
+import { IconComponent } from '../../shared/icon';
 
 const TAILLE_MAX = 2 * 1024 * 1024; // 2 Mo par photo, comme côté API
 
@@ -28,11 +29,11 @@ const vide = (): FormBijou => ({
 
 @Component({
   selector: 'app-bijoux-gestion',
-  imports: [FormsModule, BijouImageComponent, FcfaPipe, PaginationComponent , ModalComponent],
+  imports: [FormsModule, BijouImageComponent, FcfaPipe, PaginationComponent , ModalComponent, IconComponent],
   template: `
     <div class="page-head">
       <h1>Gestion des bijoux</h1>
-      <button class="btn btn-gold" (click)="nouveau()">+ Nouveau bijou</button>
+      <button class="btn btn-gold has-icon" (click)="nouveau()"><app-icon nom="plus" [taille]="16" /> Nouveau bijou</button>
     </div>
 
     @if (formulaireOuvert()) {
@@ -132,9 +133,9 @@ const vide = (): FormBijou => ({
               <td>{{ b.prix | fcfa }}</td>
               <td><span class="badge" [class]="b.quantiteStock === 0 ? 'ko' : b.quantiteStock < 5 ? 'warn' : 'ok'">{{ b.quantiteStock }}</span></td>
               <td class="actions">
-                <button class="btn btn-ghost" (click)="ouvrirStock(b)" title="Mettre à jour le stock">📦 Stock</button>
-                <button class="btn btn-ghost" (click)="modifier(b)">Modifier</button>
-                <button class="btn btn-danger-ghost" (click)="supprimer(b)">Supprimer</button>
+                <button class="btn-icon" title="Mettre à jour le stock" aria-label="Stock" (click)="ouvrirStock(b)"><app-icon nom="package" /></button>
+                <button class="btn-icon" title="Modifier" aria-label="Modifier" (click)="modifier(b)"><app-icon nom="edit" /></button>
+                <button class="btn-icon danger" title="Supprimer" aria-label="Supprimer" (click)="supprimer(b)"><app-icon nom="trash" /></button>
               </td>
             </tr>
           }

@@ -5,15 +5,17 @@ import { CatalogueService } from '../../core/services/catalogue.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { ModalComponent } from '../../shared/modal';
+import { IconComponent } from '../../shared/icon';
 
 @Component({
   selector: 'app-categories-gestion',
-  imports: [FormsModule,ModalComponent],
+  imports: [FormsModule,ModalComponent,IconComponent],
   template: `
+    
 
-      <div class="page-head">
+        <div class="page-head">
       <h1>Catégories</h1>
-      <button class="btn btn-gold" (click)="nouvelle()">+ Nouvelle catégorie</button>
+      <button class="btn btn-gold has-icon" (click)="nouvelle()"><app-icon nom="plus" [taille]="16" /> Nouvelle catégorie</button>
     </div>
 
     @if (formulaireOuvert()) {
@@ -39,8 +41,8 @@ import { ModalComponent } from '../../shared/modal';
               <td>{{ c.descriptionCategorie }}</td>
               <td>{{ c.bijoux_count ?? 0 }}</td>
               <td class="actions">
-                <button class="btn btn-ghost" (click)="modifier(c)">Modifier</button>
-                <button class="btn btn-danger-ghost" (click)="supprimer(c)">Supprimer</button>
+                <button class="btn-icon" title="Modifier" aria-label="Modifier" (click)="modifier(c)"><app-icon nom="edit" /></button>
+                <button class="btn-icon danger" title="Supprimer" aria-label="Supprimer" (click)="supprimer(c)"><app-icon nom="trash" /></button>
               </td>
             </tr>
           }

@@ -6,10 +6,11 @@ import { CommandeService } from '../../core/services/commande.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage, telecharger } from '../../core/utils';
 import { FcfaPipe, PaginationComponent } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 @Component({
   selector: 'app-factures',
-  imports: [DatePipe, RouterLink, FcfaPipe, PaginationComponent],
+  imports: [DatePipe, RouterLink, FcfaPipe, PaginationComponent,IconComponent],
   template: `
     <h1>Factures</h1>
     @if (factures().length === 0 && !chargement()) {
@@ -28,7 +29,7 @@ import { FcfaPipe, PaginationComponent } from '../../shared/shared';
                 <td>{{ f.montantHT | fcfa }}</td>
                 <td>{{ f.tva | fcfa }}</td>
                 <td><strong>{{ f.montantTTC | fcfa }}</strong></td>
-                <td><button class="btn btn-ghost" (click)="telecharger(f)">📄 PDF</button></td>
+                <td><button class="btn-icon info" title="Télécharger le PDF" aria-label="Télécharger" (click)="telecharger(f)"><app-icon nom="download" /></button></td>
               </tr>
             }
           </tbody>

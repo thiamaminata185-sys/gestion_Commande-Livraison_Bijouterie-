@@ -8,6 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { PaginationComponent } from '../../shared/shared';
 import { ModalComponent } from '../../shared/modal';
+import { IconComponent } from '../../shared/icon';
 
 interface FormUser {
   prenom: string; nom: string; email: string; telephone: string; adresse: string; role: Role; motDePasse: string;
@@ -17,11 +18,11 @@ const vide = (): FormUser => ({ prenom: '', nom: '', email: '', telephone: '', a
 
 @Component({
   selector: 'app-utilisateurs',
-  imports: [FormsModule, PaginationComponent,ModalComponent],
+  imports: [FormsModule, PaginationComponent,ModalComponent,IconComponent],
   template: `
     <div class="page-head">
       <h1>Utilisateurs</h1>
-      <button class="btn btn-gold" (click)="nouveau()">+ Nouvel utilisateur</button>
+      <button class="btn btn-gold has-icon" (click)="nouveau()"><app-icon nom="plus" [taille]="16" /> Nouvel utilisateur</button>
     </div>
 
     @if (formulaireOuvert()) {
@@ -65,12 +66,15 @@ const vide = (): FormUser => ({ prenom: '', nom: '', email: '', telephone: '', a
               <td><span class="badge info">{{ roleLabel(u.role) }}</span></td>
               <td><span class="badge" [class]="u.actif ? 'ok' : 'ko'">{{ u.actif ? 'Actif' : 'Désactivé' }}</span></td>
               <td class="actions">
-                <button class="btn btn-ghost" (click)="modifier(u)">Modifier</button>
+                <button class="btn-icon" title="Modifier" aria-label="Modifier" (click)="modifier(u)"><app-icon nom="edit" /></button>
                 @if (u.id !== auth.user()?.id) {
-                  <button class="btn btn-ghost" (click)="basculer(u)">{{ u.actif ? 'Désactiver' : 'Activer' }}</button>
-                  <button class="btn btn-danger-ghost" (click)="supprimer(u)">Supprimer</button>
+                  <button class="btn-icon" [class.ok]="!u.actif" [title]="u.actif ? 'Désactiver le compte' : 'Activer le compte'"
+                    [attr.aria-label]="u.actif ? 'Désactiver' : 'Activer'" (click)="basculer(u)">
+                    <app-icon [nom]="u.actif ? 'user-x' : 'user-check'" />
+                  </button>
+                  <button class="btn-icon danger" title="Supprimer" aria-label="Supprimer" (click)="supprimer(u)"><app-icon nom="trash" /></button>
                 }
-              </td>
+            </td>
             </tr>
           }
         </tbody>

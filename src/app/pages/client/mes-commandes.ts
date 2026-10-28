@@ -6,10 +6,11 @@ import { CommandeService } from '../../core/services/commande.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BadgeComponent, FcfaPipe, PaginationComponent } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 @Component({
   selector: 'app-mes-commandes',
-  imports: [RouterLink, DatePipe, BadgeComponent, FcfaPipe, PaginationComponent],
+  imports: [RouterLink, DatePipe, BadgeComponent, FcfaPipe, PaginationComponent,IconComponent],
   template: `
     <h1>Mes commandes</h1>
     @if (chargement()) {
@@ -31,7 +32,7 @@ import { BadgeComponent, FcfaPipe, PaginationComponent } from '../../shared/shar
                 <td>{{ resume(c) }}</td>
                 <td>{{ c.montantTotal | fcfa }}</td>
                 <td><app-badge [statut]="c.statutCommande" /></td>
-                <td><a class="btn btn-ghost" [routerLink]="['/commandes', c.idCommande]">Voir</a></td>
+                <td><a class="btn-icon" [routerLink]="['/commandes', c.idCommande]" title="Voir la commande" aria-label="Voir"><app-icon nom="eye" /></a></td>
               </tr>
             }
           </tbody>

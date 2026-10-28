@@ -7,10 +7,11 @@ import { PanierService } from '../../core/services/panier.service';
 import { ToastService } from '../../core/services/toast.service';
 import { errorMessage } from '../../core/utils';
 import { BijouImageComponent, FcfaPipe } from '../../shared/shared';
+import { IconComponent } from '../../shared/icon';
 
 @Component({
   selector: 'app-panier',
-  imports: [FormsModule, RouterLink, BijouImageComponent, FcfaPipe],
+  imports: [FormsModule, RouterLink, BijouImageComponent, FcfaPipe,IconComponent],
   template: `
     <h1>Mon panier</h1>
 
@@ -40,7 +41,7 @@ import { BijouImageComponent, FcfaPipe } from '../../shared/shared';
                     </div>
                   </td>
                   <td><strong>{{ l.sousTotal | fcfa }}</strong></td>
-                  <td><button class="btn btn-danger-ghost" (click)="retirer(l.idBijou)" title="Retirer">✕</button></td>
+                  <td><button class="btn-icon danger" title="Retirer" aria-label="Retirer" (click)="retirer(l.idBijou)"><app-icon nom="trash" /></button></td>
                 </tr>
               }
             </tbody>
