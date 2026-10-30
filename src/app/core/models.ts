@@ -87,6 +87,8 @@ export interface Paiement {
   statut: StatutPaiement;
   datePaiement?: string | null;
   referenceTransaction?: string | null;
+  fournisseur?: string | null;
+  urlPaiement?: string | null;
 }
 
 export interface Facture {

@@ -94,4 +94,12 @@ export class CommandeService {
   changerStatutLivraison(id: number, statutLivraison: StatutLivraison) {
     return this.http.patch<Livraison>(`${this.api}/livraisons/${id}/statut`, { statutLivraison });
   }
+
+  optionsPaiement() {
+    return this.http.get<{ enLigne: boolean; modeTest: boolean }>(`${this.api}/paiements/options`);
+  }
+
+  annulerMonPaiement(idCommande: number) {
+    return this.http.patch(`${this.api}/commandes/${idCommande}/paiement/annuler`, {});
+  }
 }

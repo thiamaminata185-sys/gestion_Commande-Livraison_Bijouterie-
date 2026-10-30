@@ -486,3 +486,5 @@ label.check input { width: auto; margin: 0; }
 .table .actions .btn-icon + .btn-icon { margin-left: 0.35rem; }
 /* Bouton avec texte ET icône : <button class="btn btn-gold has-icon"> */
 .has-icon { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+.alert.info { background: var(--info-bg); color: var(--info); }

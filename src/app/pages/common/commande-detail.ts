@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, switchMap, take, takeWhile, timer } from 'rxjs'; 
 import { ETAPES_COMMANDE, MODES, MODE_LABEL } from '../../core/labels';
 import { Commande, Livraison, Livreur, ModePaiement, StatutLivraison } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
@@ -11,6 +11,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { errorMessage, telecharger } from '../../core/utils';
 import { BadgeComponent, BijouImageComponent, FcfaPipe } from '../../shared/shared';
 import { IconComponent } from '../../shared/icon';
+import { DestroyRef } from '@angular/core';   
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface ActionLivraison { statut: StatutLivraison; label: string; classe: string; }
 
@@ -30,6 +32,9 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
           }
         </div>
       </div>
+      @if (verification()) {
+        <div class="alert info">⏳ Vérification de votre paiement en cours… cette page se met à jour toute seule.</div>
+      }
 
       <!-- Frise d'avancement -->
       @if (c.statutCommande === 'annulee') {
@@ -122,7 +127,15 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
                 </div>
               }
               @if (estClient() && p.statut === 'en_attente') {
-                <p class="muted small">Paiement enregistré, en attente de validation par la bijouterie.</p>
+                @if (p.urlPaiement) {
+                  <a class="btn btn-gold block" [href]="p.urlPaiement">Reprendre le paiement</a>
+                  <button class="btn btn-danger-ghost block" [disabled]="occupe()" (click)="annulerPaiementEnCours(c)">Annuler ce paiement</button>
+                } @else {
+                  <p class="muted small">Paiement enregistré, en attente de validation par la bijouterie.</p>
+                }
+              }
+              @if (estPersonnel() && p.statut === 'en_attente' && p.fournisseur) {
+                <p class="muted small">Paiement en ligne : il est validé automatiquement dès que le service de paiement le confirme. Ne validez à la main que si le paiement apparaît dans le tableau de bord PayTech.</p>
               }
             } @else {
               <p class="muted">Aucun paiement enregistré.</p>
@@ -135,7 +148,13 @@ interface ActionLivraison { statut: StatutLivraison; label: string; classe: stri
                     @for (m of modes; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
                   </select>
                 </label>
-                <button class="btn btn-gold block" [disabled]="occupe()">Payer {{ c.montantTotal | fcfa }}</button>
+                <button class="btn btn-gold block" [disabled]="occupe()">
+                  {{ enLigne() && mode !== 'especes' ? 'Payer ' : 'Enregistrer le paiement de ' }}{{ c.montantTotal | fcfa }}
+                </button>
+                @if (enLigne() && mode !== 'especes') {
+                  <p class="muted small">Vous serez redirigé vers la page de paiement sécurisée ({{ modeLabel(mode) }}).</p>
+                  @if (modeTest()) { <p class="muted small">Mode test : seuls 100 à 150 FCFA sont débités.</p> }
+                }
               </form>
             }
           </div>
@@ -186,6 +205,10 @@ export class CommandeDetailComponent implements OnInit {
   modes = MODES;
   mode: ModePaiement = 'wave';
   idLivreur: number | null = null;
+  enLigne = signal(false);
+  modeTest = signal(false);
+  verification = signal(false);
+  private destroyRef = inject(DestroyRef);
 
   estClient = computed(() => this.auth.role() === 'client');
   estPersonnel = computed(() => this.auth.role() === 'gestionnaire' || this.auth.role() === 'admin');
@@ -226,6 +249,18 @@ export class CommandeDetailComponent implements OnInit {
 
   ngOnInit() {
     this.charger();
+
+    if (this.estClient()) {
+      this.service.optionsPaiement().subscribe({
+        next: (o) => { this.enLigne.set(o.enLigne); this.modeTest.set(o.modeTest); },
+        error: () => undefined,
+      });
+    }
+
+    // Retour depuis la page de paiement PayTech (?paiement=retour ou ?paiement=annule)
+    const retour = this.route.snapshot.queryParamMap.get('paiement');
+    if (retour === 'retour') this.surveillerPaiement();
+    if (retour === 'annule') this.toast.info('Paiement non terminé : vous pouvez le reprendre quand vous voulez.');
   }
 
   libelle(statut: string): string {
@@ -275,7 +310,48 @@ export class CommandeDetailComponent implements OnInit {
   }
 
   payer(c: Commande) {
-    this.action(this.service.payer(c.idCommande, this.mode), 'Paiement enregistré');
+    this.occupe.set(true);
+    this.service.payer(c.idCommande, this.mode).subscribe({
+      next: (p) => {
+        if (p.urlPaiement) {
+          window.location.href = p.urlPaiement; // paiement en ligne : on quitte le site vers la page Wave / Orange Money
+          return;
+        }
+        this.toast.success('Paiement enregistré');
+        this.charger();
+      },
+      error: (e) => {
+        this.toast.error(errorMessage(e));
+        this.occupe.set(false);
+      },
+    });
+  }
+
+  annulerPaiementEnCours(c: Commande) {
+    if (!confirm("Annuler ce paiement ? Ne le faites que si vous n'avez pas payé.")) return;
+    this.action(this.service.annulerMonPaiement(c.idCommande), 'Paiement annulé');
+  }
+
+  /** Après le retour de PayTech, la confirmation arrive en quelques secondes : on recharge la commande jusqu'au résultat. */
+  private surveillerPaiement() {
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    this.verification.set(true);
+    timer(2000, 3000)
+      .pipe(
+        take(20), // environ une minute au maximum
+        switchMap(() => this.service.detail(id)),
+        takeWhile((c) => c.paiement?.statut === 'en_attente', true),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (c) => {
+          this.commande.set(c);
+          if (c.paiement?.statut === 'valide') this.toast.success('Paiement confirmé, merci !');
+          if (c.paiement?.statut === 'annule') this.toast.error('Le paiement a été annulé');
+        },
+        complete: () => this.verification.set(false),
+        error: () => this.verification.set(false),
+      });
   }
 
   validerPaiement(id: number) {
