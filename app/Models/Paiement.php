@@ -12,7 +12,7 @@ class Paiement extends Model
 
     protected $fillable = [
         'idCommande','montant','mode','datePaiement',
-        'referenceTransaction','statut'
+        'referenceTransaction','statut','fournisseur','jetonFournisseur','urlPaiement'
     ];
 
     protected $casts = [

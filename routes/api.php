@@ -18,11 +18,13 @@ use App\Http\Controllers\Api\StatistiqueController;
 use App\Http\Controllers\Api\TeleversementController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PaytechIpnController;
 
 // --------- PUBLIC ---------
 // throttle : 10 tentatives par minute max (anti force brute)
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/login',    [AuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/paiements/ipn/paytech', [PaytechIpnController::class, 'recevoir'])->middleware('throttle:120,1');
 
 // --------- AUTHENTIFIÉ ---------
 Route::middleware('auth:sanctum')->group(function () {
@@ -48,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
          ->middleware('role:gestionnaire,admin,artisan');
     Route::patch('/commandes/{commande}/annuler', [CommandeController::class, 'annuler'])
          ->middleware('role:client,gestionnaire,admin');
+    Route::get('/paiements/options', [PaiementController::class, 'options']);
 
     // ---- CLIENT ----
     Route::middleware('role:client')->group(function () {
@@ -64,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/favoris/{idBijou}',   [FavoriController::class, 'store']);
         Route::delete('/favoris/{idBijou}', [FavoriController::class, 'destroy']);
         Route::post('/commandes/{commande}/paiement', [PaiementController::class, 'store']);
+        Route::patch('/commandes/{commande}/paiement/annuler', [PaiementController::class, 'annulerLePaiement']);
         Route::get('/mes-factures/{facture}/telecharger', [FactureController::class, 'telechargerMaFacture']);
     });
 
