@@ -26,7 +26,7 @@ import { errorMessage } from '../../core/utils';
         </form>
         <p class="muted center">Pas encore de compte ? <a routerLink="/register">Créer un compte client</a></p>
 
-        <details class="demo">
+        <!-- <details class="demo">
           <summary>Comptes de démonstration</summary>
           <p class="muted">Mot de passe : <code>password</code></p>
           <div class="chips">
@@ -34,7 +34,7 @@ import { errorMessage } from '../../core/utils';
               <button type="button" class="chip" (click)="remplir(d.email)">{{ d.label }}</button>
             }
           </div>
-        </details>
+        </details> -->
       </div>
     </div>
   `,
