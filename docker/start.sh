@@ -3,6 +3,14 @@
 set -e
 cd /var/www/html
 
+echo "DB_HOST=$DB_HOST"
+echo "DB_URL défini ? ${DB_URL:+oui}"
+echo "DATABASE_URL défini ? ${DATABASE_URL:+oui}"
+ls -la .env 2>/dev/null || echo "pas de fichier .env"
+unset DB_URL DATABASE_URL
+rm -f .env
+php artisan config:clear
+
 # À chaque démarrage : création / mise à jour des tables
 php artisan migrate --force
 
